@@ -1,0 +1,32 @@
+{
+    "manifest_version": 3,
+    "name": "myextension",
+    "icons": {
+        "32": "natcast.jpeg"
+    },
+    "version": "1.0.0",
+    "description": "A plain file right now",
+    "background": {
+        "service_worker": "servise-worker.js",
+        "type": "module"
+    },
+    "action": {
+        "default_popup": "index.html"
+     },
+    "permissions": [
+        "scripting"
+    ],
+    "host_permissions": [
+        "http://*/*",
+        "https://*/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["index.js"],
+            "run_at": "document_end"
+        }
+    ]
+
+}
+
