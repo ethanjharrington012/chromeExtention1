@@ -54,6 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+
+
+
 // Example Flow:
 
 // User Interaction: The user clicks a button in the popup.
