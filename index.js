@@ -26,36 +26,44 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         });
     }
 });
-// Fetch all points and log them
-// function fetchAllPoints() {
-//     const pointsElements = document.querySelectorAll('.points-total');
-//     const pointsList = Array.from(pointsElements).map(el => el.textContent.trim());
-//     console.log("Points found on page:", pointsList);
-//     return pointsList;
-// }
 
 // content.js
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "fetchFlightDetails") {
-        let flights = [];
-        document.querySelectorAll('.flight-block').forEach(item => {
-            let flight = {
-                departureTime: item.querySelector('.departure-time').textContent.trim(),
-                arrivalTime: item.querySelector('.arrival-time').textContent.trim(),
-                origin: item.querySelector('.departure-name').textContent.trim(),
-                destination: item.querySelector('.arrival-name').textContent.trim(),
-                airline: item.querySelector('.operating-airline').textContent.trim(),
-                // Add more details as needed
-            };
-            flights.push(flight);
+
+
+// content.js
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "fetchFlightDetails") {
+        scrapeAndFetchDetails().then(flights => {
+            sendResponse({flights});
+        }).catch(error => {
+            console.error("Error fetching flight details:", error);
+            sendResponse({error: error.toString()});
         });
-        sendResponse({flights: flights});
+        return true;  // Indicates asynchronous response expected.
     }
 });
 
+function scrapeAndFetchDetails() {
+    const flightElements = document.querySelectorAll('.flight-block');
+    const flights = [];
 
+    flightElements.forEach(item => {
+        let flight = {
+            departureTime: item.querySelector('.departure-time').textContent.trim(),
+            arrivalTime: item.querySelector('.arrival-time').textContent.trim(),
+            origin: item.querySelector('.departure-name').textContent.trim(),
+            destination: item.querySelector('.arrival-name').textContent.trim(),
+            airline: item.querySelector('.operating-airline').textContent.trim(),
+        };
+        flights.push(flight);
+    });
 
-
+    return new Promise((resolve) => {
+        chrome.runtime.sendMessage({action: "fetchFlightDetails", flights}, (response) => {
+            resolve(response.flights);
+        });
+    });
+}
 
 // Example Flow:
 

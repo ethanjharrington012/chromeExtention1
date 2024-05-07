@@ -1,28 +1,57 @@
-// Purpose: Handle API requests and business logic.
+// // Purpose: Handle API requests and business logic.
 
 
-const APIKEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0IiwianRpIjoiM2JkMzYxMGYzMWViMWExZWUxZGEwNjZhZWVlNTY1Yjk2NWI5MzkyNDYwYzAzZGMxMjc2YWQ3YTY4YzMzZWVmNGY0Y2ZmMDNhOThlMDNmZjYiLCJpYXQiOjE3MTM0NTE5MzgsIm5iZiI6MTcxMzQ1MTkzOCwiZXhwIjoxNzQ0OTg3OTM4LCJzdWIiOiIyMjQ0NCIsInNjb3BlcyI6W119.bBris5JQ4l_CRJ2wcoicpcTediwGMqct-D-30rwts2vFD8MBnFIA5RCjrPMyoeMLkkghENcxU3GrNqVJpQmTXg';
+// function formatDate(input) {
+//     console.log("formatDate received input:", input); // Log input to debug
 
-async function fetchAirportDetails() {
-    const url = `https://app.goflightlabs.com/retrieveFlights?access_key=${APIKEY}&originSkyId=LOND&destinationSkyId=NYCA&originEntityId=27544008&destinationEntityId=27537542&date=2024-04-27`;
+//     // Quick check to return the date if it's already in the expected format
+//     if (/^\d{4}-\d{2}-\d{2}$/.test(input)) {
+//         console.log("Date is already in correct format:", input);
+//         return input; // Return as is if the date matches the YYYY-MM-DD pattern
+//     }
 
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log("Success:", data.context);
-        data.itineraries.forEach(itinerary => {
-            console.log(`Itinerary ID: ${itinerary.id}, Price: ${itinerary.price.formatted}`);
-            itinerary.legs.forEach(leg => {
-                console.log(`Leg ID: ${leg.id}, Origin: ${leg.origin.name}, Destination: ${leg.destination.name}`);
-            });
+//     const months = {
+//         January: '01', February: '02', March: '03', April: '04', May: '05', June: '06',
+//         July: '07', August: '08', September: '09', October: '10', November: '11', December: '12'
+//     };
+
+//     // Attempt to split the string and extract date components
+//     const parts = input.split(' ');
+//     if (parts.length < 4) {
+//         console.error("Date input format is incorrect, expected at least 4 parts:", parts);
+//         return null;
+//     }
+
+//     const month = months[parts[1]];
+//     const day = parts[2].replace(',', ''); // "15," -> "15"
+//     const year = parts[3];
+
+//     if (!month || !day || !year) {
+//         console.error("Failed to parse date parts correctly from:", parts);
+//         return null;
+//     }
+
+//     const dayFormatted = day.padStart(2, '0'); // Ensure day is always two digits
+//     return `${year}-${month}-${dayFormatted}`;
+// }
+
+// background.js
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "fetchFlightDetails") {
+        let flightsWithDetails = [];
+
+        Promise.all(message.flights.map(flight => 
+            fetch(`http://localhost:4000/fetch-airport?query=${encodeURIComponent(flight.origin)}`)
+                .then(response => response.json())
+                .then(details => ({...flight, originDetails: details}))
+                .catch(error => ({...flight, error: error.toString()}))
+        )).then(results => {
+            sendResponse({flights: results});
         });
-        return data;
-    } catch (error) {
-        console.error("Error fetching airport details:", error);
-    }
-}
 
-fetchAirportDetails();
+        return true; // Indicates an asynchronous response is pending.
+    }
+});
+
+
+// // fetchFirstData()
