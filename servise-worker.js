@@ -36,22 +36,24 @@
 // }
 
 // background.js
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "fetchFlightDetails") {
-        let flightsWithDetails = [];
-
-        Promise.all(message.flights.map(flight => 
-            fetch(`http://localhost:4000/fetch-airport?query=${encodeURIComponent(flight.origin)}`)
-                .then(response => response.json())
-                .then(details => ({...flight, originDetails: details}))
-                .catch(error => ({...flight, error: error.toString()}))
-        )).then(results => {
-            sendResponse({flights: results});
-        });
+        // Fetch details for Boston regardless of the flight data
+        fetch(`http://localhost:4000/fetch-airport?query=${encodeURIComponent("boston")}`)
+            .then(response => response.json())
+            .then(details => {
+                // You can now send these details back to the sender
+                sendResponse({bostonDetails: details});
+            })
+            .catch(error => {
+                console.error('Error fetching Boston details:', error);
+                sendResponse({error: error.toString()});
+            });
 
         return true; // Indicates an asynchronous response is pending.
     }
 });
 
 
-// // fetchFirstData()
+

@@ -36,15 +36,37 @@ document.getElementById('getting').addEventListener('click', () => {
 //     });
 // });
 
+function displayBostonDetails(details) {
+    const displayElement = document.getElementById('boston-details');
+    if (details && details.length > 0) {
+        const airportDetails = details[0];
+        const entityId = airportDetails.navigation.entityId
+
+        displayElement.innerHTML = `
+            <p><strong>Airport Name:</strong> ${details}</p>
+            <p><strong>Entity Id:</strong> ${entityId}</p>
+    
+        `;
+        console.log('details:', details);
+        console.log(`EntityId: ${airportDetails.navigation.entityId}`);
+    } else {
+        displayElement.textContent = "No details available for Boston.";
+    }
+}
 // popup.js
-// popup.js
-document.getElementById('fetch-data').addEventListener('click', () => {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {action: "fetchFlightDetails"}, function(response) {
-            displayFlights(response.flights);
-        });
+document.getElementById('fetch-boston-data').addEventListener('click', () => {
+    chrome.runtime.sendMessage({action: "fetchFlightDetails"}, response => {
+        if (response.bostonDetails) {
+            console.log('Boston Airport Data:', response);
+            // Display these details in your popup
+            displayBostonDetails(response.bostonDetails);
+        } else if (response.error) {
+            console.error('Failed to fetch Boston details:', response.error);
+        }
     });
 });
+
+
 
 function displayFlights(flights) {
     const displayElement = document.getElementById('flights-display');
@@ -61,6 +83,7 @@ function displayFlights(flights) {
         displayElement.appendChild(flightInfo);
     });
 }
+
 // example flow
 
 // User Interaction: The user clicks a button in the popup.

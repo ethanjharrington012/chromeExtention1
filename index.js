@@ -31,15 +31,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 // content.js
+// content.js
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "fetchFlightDetails") {
-        scrapeAndFetchDetails().then(flights => {
-            sendResponse({flights});
-        }).catch(error => {
-            console.error("Error fetching flight details:", error);
-            sendResponse({error: error.toString()});
-        });
-        return true;  // Indicates asynchronous response expected.
+    if (message.action === "scrapeAndFetchFlights") {
+        scrapeAndFetchDetails();
     }
 });
 
@@ -58,12 +53,12 @@ function scrapeAndFetchDetails() {
         flights.push(flight);
     });
 
-    return new Promise((resolve) => {
-        chrome.runtime.sendMessage({action: "fetchFlightDetails", flights}, (response) => {
-            resolve(response.flights);
-        });
+    // Fetch additional details for the first origin as an example (Bosten)
+    chrome.runtime.sendMessage({action: "fetchFlightDetails", flights}, (response) => {
+        console.log('Received fetched details:', response.flights);
     });
 }
+
 
 // Example Flow:
 
