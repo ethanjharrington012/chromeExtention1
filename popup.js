@@ -67,6 +67,21 @@ document.getElementById('fetch-boston-data').addEventListener('click', () => {
 });
 
 
+// popup.js
+
+document.getElementById('fetch-data').addEventListener('click', () => {
+    chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+        // Make sure to get the tab ID correctly
+        chrome.tabs.sendMessage(tabs[0].id, {action: "scrapeAndFetchFlights"}, (response) => {
+            if (response && response.scrapedData && response.scrapedData.length > 0) {
+                displayFlights(response.scrapedData);
+            } else {
+                console.error('No flight data received');
+                document.getElementById('flights-display').textContent = 'No flight data available.';
+            }
+        });
+    });
+});
 
 function displayFlights(flights) {
     const displayElement = document.getElementById('flights-display');
@@ -77,12 +92,13 @@ function displayFlights(flights) {
             <p>Airline: ${flight.airline}</p>
             <p>Depart: ${flight.departureTime}</p>
             <p>Arrive: ${flight.arrivalTime}</p>
-            <p>From: ${flight.origin} (${flight.originDetails ? flight.originDetails.name : 'No details'})</p>
+            <p>From: ${flight.origin}</p>
             <p>To: ${flight.destination}</p>
         `;
         displayElement.appendChild(flightInfo);
     });
 }
+
 
 // example flow
 

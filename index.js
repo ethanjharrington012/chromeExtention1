@@ -31,12 +31,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 // content.js
+
 // content.js
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "scrapeAndFetchFlights") {
-        scrapeAndFetchDetails();
-    }
-});
 
 function scrapeAndFetchDetails() {
     const flightElements = document.querySelectorAll('.flight-block');
@@ -53,11 +49,18 @@ function scrapeAndFetchDetails() {
         flights.push(flight);
     });
 
-    // Fetch additional details for the first origin as an example (Bosten)
-    chrome.runtime.sendMessage({action: "fetchFlightDetails", flights}, (response) => {
-        console.log('Received fetched details:', response.flights);
-    });
+    // Send the scraped flights back to the popup or background script
+    return flights; // Now this just returns the array of flights
 }
+
+// Listen for a message from the popup to start scraping
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.action === "scrapeAndFetchFlights") {
+        const scrapedData = scrapeAndFetchDetails();
+        sendResponse({scrapedData}); // Send scraped data back to popup
+        return true;  // Indicates asynchronous response expected.
+    }
+});
 
 
 // Example Flow:
