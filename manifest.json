@@ -15,7 +15,7 @@
      },
     "permissions": [
         "scripting",
-        "activeTap",
+        "activeTab",
         "tabs"
     ],
     "host_permissions": [

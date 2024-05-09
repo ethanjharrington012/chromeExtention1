@@ -36,35 +36,36 @@ document.getElementById('getting').addEventListener('click', () => {
 //     });
 // });
 
-function displayBostonDetails(details) {
-    const displayElement = document.getElementById('boston-details');
-    if (details && details.length > 0) {
-        const airportDetails = details[0];
-        const entityId = airportDetails.navigation.entityId
-
-        displayElement.innerHTML = `
-            <p><strong>Airport Name:</strong> ${details}</p>
-            <p><strong>Entity Id:</strong> ${entityId}</p>
-    
-        `;
-        console.log('details:', details);
-        console.log(`EntityId: ${airportDetails.navigation.entityId}`);
-    } else {
-        displayElement.textContent = "No details available for Boston.";
-    }
-}
-// popup.js
-document.getElementById('fetch-boston-data').addEventListener('click', () => {
-    chrome.runtime.sendMessage({action: "fetchFlightDetails"}, response => {
-        if (response.bostonDetails) {
-            console.log('Boston Airport Data:', response);
-            // Display these details in your popup
-            displayBostonDetails(response.bostonDetails);
-        } else if (response.error) {
-            console.error('Failed to fetch Boston details:', response.error);
+// Ensures the DOM is fully loaded before attaching event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('fetch-data-button').addEventListener('click', () => {
+        let cityQuery = document.getElementById('city-input').value;
+        if (cityQuery) {
+            chrome.runtime.sendMessage({action: "fetchAirportDetails", query: cityQuery}, (response) => {
+                if (response.airportDetails) {
+                    displayAirportDetails(response.airportDetails);
+                } else if (response.error) {
+                    console.error('Failed to fetch details:', response.error);
+                    displayAirportDetails(null);
+                }
+            });
         }
     });
 });
+
+function displayAirportDetails(details) {
+    const displayElement = document.getElementById('airport-details');
+    if (details) {
+        displayElement.innerHTML = `
+            <p><strong>Sky ID:</strong> ${details.skyId}</p>
+            <p><strong>Entity ID:</strong> ${details.entityId}</p>
+        `;
+    } else {
+        displayElement.textContent = "No details available.";
+    }
+}
+
+
 
 
 // popup.js

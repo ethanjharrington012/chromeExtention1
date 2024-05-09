@@ -37,23 +37,17 @@
 
 // background.js
 
+// Handles incoming messages for fetching airport details dynamically
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "fetchFlightDetails") {
-        // Fetch details for Boston regardless of the flight data
-        fetch(`http://localhost:4000/fetch-airport?query=${encodeURIComponent("boston")}`)
+    if (message.action === "fetchAirportDetails" && message.query) {
+        fetch(`http://localhost:4000/fetch-airport?query=${encodeURIComponent(message.query)}`)
             .then(response => response.json())
-            .then(details => {
-                // You can now send these details back to the sender
-                sendResponse({bostonDetails: details});
-            })
-            .catch(error => {
-                console.error('Error fetching Boston details:', error);
-                sendResponse({error: error.toString()});
-            });
-
-        return true; // Indicates an asynchronous response is pending.
+            .then(details => sendResponse({airportDetails: details}))
+            .catch(error => sendResponse({error: error.message}));
+        return true; // Keeps the message channel open for the response
     }
 });
+
 
 
 
